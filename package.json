@@ -1,5 +1,9 @@
 {
   "name": "private-scanner",
   "version": "0.1.0",
-  "license": "GPL-3.0-only"
+  "license": "GPL-3.0-only",
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6"
+  }
 }
