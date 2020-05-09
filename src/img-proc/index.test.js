@@ -1,4 +1,6 @@
-import { Image, loadImage } from 'canvas';
+import { Canvas, createCanvas, Image, loadImage, ImageData } from 'canvas';
+import { writeFileSync } from 'fs';
+import { findSheetCorners } from '.';
 
 async function readImage(path) {
   const image = await loadImage(path);
@@ -32,7 +34,21 @@ function areEquals(imageA, imageB) {
   return equals;
 }
 
+function drawContour(image, contour, outputFilename) {
+  const canvas = createCanvas(image.cols, image.rows);
+  const contours = new cv.MatVector();
+  contours.push_back(contour);
+  cv.drawContours(image, contours, 0, new cv.Scalar(0, 0, 0), 5);
+  contours.delete();
+  cv.imshow(canvas, image);
+  const filename = outputFilename || `test-output-${Date.now()}.jpeg`;
+  writeFileSync(filename, canvas.toBuffer('image/jpeg'));
+}
+
 beforeAll(async () => {
+  global.Image = Image;
+  global.HTMLCanvasElement = Canvas;
+  global.ImageData = ImageData;
   global.HTMLImageElement = Image;
 
   await new Promise(resolve => {
@@ -64,5 +80,20 @@ describe('images compare', () => {
     imageA = await readImage(testImageA);
     imageB = await readImage(testImageB);
     expect(areEquals(imageA, imageB)).toBe(false);
+  });
+});
+
+// TODO: Improve tests
+describe('sheet detection', () => {
+  it('sheets are detected', async () => {
+    const imageA = await readImage(testImageA);
+    const imageB = await readImage(testImageB);
+    const sheetA = findSheetCorners(imageA);
+    const sheetB = findSheetCorners(imageB);
+
+    if (process.env.DRAW_OUTPUT) {
+      drawContour(imageA, sheetA);
+      drawContour(imageB, sheetB);
+    }
   });
 });
