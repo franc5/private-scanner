@@ -27,11 +27,44 @@ function findLargestContour(edges) {
   return largestContour;
 }
 
-// TODO: Extract corners from `contour`
+// TODO: Improve curve approximation
+function approximateCurve(curve, maxIterations = 25) {
+  if (curve.rows < 4) {
+    throw new Error("Invalid curve");
+  }
+
+  if (curve.rows === 4) {
+    return curve;
+  }
+
+  let iterations = 0;
+  const approximatedCurve = new cv.Mat();
+  let epsilon = 0.02 * cv.arcLength(curve, true);
+
+  while (approximatedCurve.rows !== 4 && iterations < maxIterations) {
+    cv.approxPolyDP(curve, approximatedCurve, epsilon, true);
+    if (approximatedCurve.rows === 4) {
+      break;
+    }
+
+    (approximatedCurve.rows < 4) ? epsilon *= 0.8 : epsilon *= 1.2;
+    iterations++;
+  }
+
+  if (approximatedCurve.rows !== 4) {
+    throw new Error("Cannot approximate curve");
+  }
+
+  return approximatedCurve;
+}
+
+// TODO: Extract points from `corners`
 export function findSheetCorners(image, threshold = 200, ratio = 2) {
   const edges = detectEdges(image, threshold, ratio);
   const contour = findLargestContour(edges);
   edges.delete();
+  const corners = approximateCurve(contour);
+  contour.delete();
 
-  return contour;
+  return corners;
 }

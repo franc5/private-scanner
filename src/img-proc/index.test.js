@@ -85,14 +85,16 @@ describe('images compare', () => {
 
 // TODO: Improve tests
 describe('sheet detection', () => {
-  it('sheets are detected', async () => {
+  it('sheet cannot be detected', async () => {
     const imageA = await readImage(testImageA);
+    expect(() => findSheetCorners(imageA)).toThrow("Cannot approximate curve");
+  });
+
+  it('sheet is detected', async () => {
     const imageB = await readImage(testImageB);
-    const sheetA = findSheetCorners(imageA);
     const sheetB = findSheetCorners(imageB);
 
     if (process.env.DRAW_OUTPUT) {
-      drawContour(imageA, sheetA);
       drawContour(imageB, sheetB);
     }
   });
