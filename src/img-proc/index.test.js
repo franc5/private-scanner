@@ -68,8 +68,25 @@ beforeAll(async () => {
   });
 });
 
-const testImageA = `${__dirname}/test-img/test-image-a.jpeg`;
-const testImageB = `${__dirname}/test-img/test-image-b.jpeg`;
+const testImageA = {
+  image: `${__dirname}/test-img/test-image-a.jpeg`,
+  corners: [ // top-left, top-right, bottom-right, bottom-left
+    { x: 91, y: 43 },
+    { x: 821, y: 39 },
+    { x: 826, y: 1092 },
+    { x: 83, y: 1071 },
+  ],
+};
+
+const testImageB = {
+  image: `${__dirname}/test-img/test-image-b.jpeg`,
+  corners: [ // top-left, top-right, bottom-right, bottom-left
+    { x: 151, y: 90 },
+    { x: 746, y: 94 },
+    { x: 846, y: 1025 },
+    { x: 12, y: 991 },
+  ],
+};
 
 describe('images compare', () => {
   let imageA, imageB;
@@ -80,25 +97,38 @@ describe('images compare', () => {
   });
 
   it('images are equals', async () => {
-    imageA = await readImage(testImageA);
-    imageB = await readImage(testImageA);
+    imageA = await readImage(testImageA.image);
+    imageB = await readImage(testImageA.image);
     expect(areEquals(imageA, imageB)).toBe(true);
   });
 
   it('images are different', async () => {
-    imageA = await readImage(testImageA);
-    imageB = await readImage(testImageB);
+    imageA = await readImage(testImageA.image);
+    imageB = await readImage(testImageB.image);
     expect(areEquals(imageA, imageB)).toBe(false);
   });
 });
 
-// TODO: Improve tests
 describe('corners detection', () => {
   it('corners are correctly detected', async () => {
-    const imageA = await readImage(testImageA);
-    const imageB = await readImage(testImageB);
+    const imageA = await readImage(testImageA.image);
+    const imageB = await readImage(testImageB.image);
     const cornersA = findSheetCorners(imageA);
     const cornersB = findSheetCorners(imageB);
+
+    const cornerDistanceTolerance = 5; // 5px
+    cornersA.forEach((computedPoint, index) => {
+      const realCorner = testImageA.corners[index];
+      const pointsDistance = Math.hypot(computedPoint.x - realCorner.x, computedPoint.y - realCorner.y);
+      expect(pointsDistance).toBeLessThan(cornerDistanceTolerance);
+    });
+    cornersB.forEach((computedPoint, index) => {
+      const realCorner = testImageB.corners[index];
+      const pointsDistance = Math.hypot(computedPoint.x - realCorner.x, computedPoint.y - realCorner.y);
+      expect(pointsDistance).toBeLessThan(cornerDistanceTolerance);
+    });
+
+    expect.assertions(8); // 2 test images, 4 corners per image to verify, 1 assertion per corner
 
     if (process.env.DRAW_OUTPUT) {
       drawPoints(imageA, cornersA);
