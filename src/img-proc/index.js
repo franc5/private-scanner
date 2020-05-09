@@ -27,7 +27,6 @@ function findLargestContour(edges) {
   return largestContour;
 }
 
-// TODO: Improve curve approximation
 function approximateCurve(curve, maxIterations = 25) {
   if (curve.rows < 4) {
     throw new Error("Invalid curve");
@@ -38,15 +37,13 @@ function approximateCurve(curve, maxIterations = 25) {
   }
 
   let iterations = 0;
+  const curveHull = new cv.Mat();
+  cv.convexHull(curve, curveHull);
   const approximatedCurve = new cv.Mat();
-  let epsilon = 0.02 * cv.arcLength(curve, true);
+  let epsilon = 0.02 * cv.arcLength(curveHull, true);
 
   while (approximatedCurve.rows !== 4 && iterations < maxIterations) {
-    cv.approxPolyDP(curve, approximatedCurve, epsilon, true);
-    if (approximatedCurve.rows === 4) {
-      break;
-    }
-
+    cv.approxPolyDP(curveHull, approximatedCurve, epsilon, true);
     (approximatedCurve.rows < 4) ? epsilon *= 0.8 : epsilon *= 1.2;
     iterations++;
   }

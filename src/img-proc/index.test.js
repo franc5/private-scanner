@@ -94,16 +94,14 @@ describe('images compare', () => {
 
 // TODO: Improve tests
 describe('corners detection', () => {
-  it('corners cannot be detected', async () => {
+  it('corners are correctly detected', async () => {
     const imageA = await readImage(testImageA);
-    expect(() => findSheetCorners(imageA)).toThrow("Cannot approximate curve");
-  });
-
-  it('corners are detected', async () => {
     const imageB = await readImage(testImageB);
+    const cornersA = findSheetCorners(imageA);
     const cornersB = findSheetCorners(imageB);
 
     if (process.env.DRAW_OUTPUT) {
+      drawPoints(imageA, cornersA);
       drawPoints(imageB, cornersB);
     }
   });
