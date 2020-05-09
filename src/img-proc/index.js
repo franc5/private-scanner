@@ -70,7 +70,24 @@ function getCurvePoints(curve) {
   return points;
 }
 
-// TODO: Sort `corners`: [top-left, top-right, bottom-right, bottom-left]
+// Sort corners of the sheet: [top-left, top-right, bottom-right, bottom-left]
+// Normal situations are assumed to sort the corners
+function sortCorners(corners) {
+  const sortedCorners = [...corners];
+  sortedCorners.sort((pointA, pointB) => pointA.y - pointB.y);
+  if (sortedCorners[0].x > sortedCorners[1].x) {
+    const topLeft = sortedCorners[1];
+    sortedCorners[1] = sortedCorners[0];
+    sortedCorners[0] = topLeft;
+  }
+  if (sortedCorners[3].x > sortedCorners[2].x) {
+    const bottomLeft = sortedCorners[2];
+    sortedCorners[2] = sortedCorners[3];
+    sortedCorners[3] = bottomLeft;
+  }
+  return sortedCorners;
+}
+
 export function findSheetCorners(image, threshold = 200, ratio = 2) {
   const edges = detectEdges(image, threshold, ratio);
   const largestContour = findLargestContour(edges);
@@ -79,6 +96,7 @@ export function findSheetCorners(image, threshold = 200, ratio = 2) {
   largestContour.delete();
   const corners = getCurvePoints(smoothContour);
   smoothContour.delete();
+  const sortedCorners = sortCorners(corners);
 
-  return corners;
+  return sortedCorners;
 }
