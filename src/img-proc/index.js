@@ -58,13 +58,27 @@ function approximateCurve(curve, maxIterations = 25) {
   return approximatedCurve;
 }
 
-// TODO: Extract points from `corners`
+function getCurvePoints(curve) {
+  const points = [];
+  for (let i = 0; i < curve.rows; i++) {
+    points.push({
+      x: curve.data32S[i*2],
+      y: curve.data32S[i*2+1],
+    });
+  }
+
+  return points;
+}
+
+// TODO: Sort `corners`: [top-left, top-right, bottom-right, bottom-left]
 export function findSheetCorners(image, threshold = 200, ratio = 2) {
   const edges = detectEdges(image, threshold, ratio);
-  const contour = findLargestContour(edges);
+  const largestContour = findLargestContour(edges);
   edges.delete();
-  const corners = approximateCurve(contour);
-  contour.delete();
+  const smoothContour = approximateCurve(largestContour);
+  largestContour.delete();
+  const corners = getCurvePoints(smoothContour);
+  smoothContour.delete();
 
   return corners;
 }
