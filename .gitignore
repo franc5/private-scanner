@@ -1,5 +1,11 @@
 # Dependencies
 node_modules/
 
+# cache
+.cache/
+
+# builds
+dist/
+
 # test output files
 test-output-*
