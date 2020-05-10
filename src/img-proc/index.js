@@ -97,3 +97,38 @@ export function findSheetCorners(image, threshold = 200, ratio = 2) {
 
   return sortedCorners;
 }
+
+// Corners must be sorted: [top-left, top-right, bottom-right, bottom-left]
+export function removeSheetPerspective(image, corners) {
+  const [topLeft, topRight, bottomRight, bottomLeft] = corners;
+
+  const roiOffsetX = Math.min(topLeft.x, bottomLeft.x);
+  const roiOffsetY = Math.min(topLeft.y, topRight.y);
+  const roi = {
+    x: roiOffsetX,
+    y: roiOffsetY,
+    width: Math.max(topRight.x, bottomRight.x) - roiOffsetX,
+    height: Math.max(bottomLeft.y, bottomRight.y) - roiOffsetY,
+  };
+  const roiImage = image.roi(roi);
+
+  const originalPerspective = cv.matFromArray(4, 1, cv.CV_32FC2, [
+    topLeft.x - roiOffsetX, topLeft.y - roiOffsetY,
+    topRight.x - roiOffsetX, topRight.y - roiOffsetY,
+    bottomRight.x - roiOffsetX, bottomRight.y - roiOffsetY,
+    bottomLeft.x - roiOffsetX, bottomLeft.y - roiOffsetY,
+  ]);
+  const noPerspective = cv.matFromArray(4, 1, cv.CV_32FC2, [
+    0, 0,
+    roi.width, 0,
+    roi.width, roi.height,
+    0, roi.height,
+  ]);
+  const transformationMatrix = cv.getPerspectiveTransform(originalPerspective, noPerspective);
+
+  const noPerspectiveRoiImage = new cv.Mat();
+  cv.warpPerspective(roiImage, noPerspectiveRoiImage, transformationMatrix, roiImage.size());
+  roiImage.delete();
+  transformationMatrix.delete();
+  return noPerspectiveRoiImage;
+}

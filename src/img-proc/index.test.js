@@ -1,6 +1,6 @@
 import { Canvas, createCanvas, Image, loadImage, ImageData } from 'canvas';
 import { writeFileSync } from 'fs';
-import { findSheetCorners } from '.';
+import { findSheetCorners, removeSheetPerspective } from '.';
 
 async function readImage(path) {
   const image = await loadImage(path);
@@ -34,24 +34,25 @@ function areEquals(imageA, imageB) {
   return equals;
 }
 
-function drawPoints(image, points, outputFilename) {
-  const color = new cv.Scalar(255, 0, 0, 255);
+function drawImage(image, outputFilename) {
   const canvas = createCanvas(image.cols, image.rows);
-  points.forEach(({x, y}) => cv.circle(image, new cv.Point(x, y), 5, color, -1));
   cv.imshow(canvas, image);
   const filename = outputFilename || `test-output-${Date.now()}.jpeg`;
   writeFileSync(filename, canvas.toBuffer('image/jpeg'));
 }
 
+function drawPoints(image, points, outputFilename) {
+  const color = new cv.Scalar(255, 0, 0, 255);
+  points.forEach(({x, y}) => cv.circle(image, new cv.Point(x, y), 5, color, -1));
+  drawImage(image, outputFilename);
+}
+
 function drawContour(image, contour, outputFilename) {
-  const canvas = createCanvas(image.cols, image.rows);
   const contours = new cv.MatVector();
   contours.push_back(contour);
   cv.drawContours(image, contours, 0, new cv.Scalar(0, 0, 0), 5);
   contours.delete();
-  cv.imshow(canvas, image);
-  const filename = outputFilename || `test-output-${Date.now()}.jpeg`;
-  writeFileSync(filename, canvas.toBuffer('image/jpeg'));
+  drawImage(image, outputFilename);
 }
 
 beforeAll(async () => {
@@ -76,6 +77,7 @@ const testImageA = {
     { x: 826, y: 1092 },
     { x: 83, y: 1071 },
   ],
+  output: `${__dirname}/test-img/test-image-a-output.jpeg`,
 };
 
 const testImageB = {
@@ -86,6 +88,7 @@ const testImageB = {
     { x: 846, y: 1025 },
     { x: 12, y: 991 },
   ],
+  output: `${__dirname}/test-img/test-image-b-output.jpeg`,
 };
 
 describe('images compare', () => {
@@ -133,6 +136,27 @@ describe('corners detection', () => {
     if (process.env.DRAW_OUTPUT) {
       drawPoints(imageA, cornersA);
       drawPoints(imageB, cornersB);
+    }
+  });
+});
+
+// TODO: Perspective tests are not working, probably because of a colorspace
+//       issue between resulting image and target image.
+describe('remove sheet perspective', () => {
+  it('perspective is removed successfully', async () => {
+    const imageA = await readImage(testImageA.image);
+    const imageB = await readImage(testImageB.image);
+    const validSheetA = await readImage(testImageA.output);
+    const validSheetB = await readImage(testImageB.output);
+    const sheetA = removeSheetPerspective(imageA, testImageA.corners);
+    const sheetB = removeSheetPerspective(imageB, testImageB.corners);
+
+    expect(areEquals(sheetA, validSheetA)).toBe(true);
+    expect(areEquals(sheetB, validSheetB)).toBe(true);
+
+    if (process.env.DRAW_OUTPUT) {
+      drawImage(sheetA);
+      drawImage(sheetB);
     }
   });
 });
