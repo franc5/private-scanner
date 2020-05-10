@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "license": "GPL-3.0-only",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "parcel src/index.html",
+    "build": "parcel build src/index.html"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
