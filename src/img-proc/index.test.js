@@ -113,30 +113,28 @@ describe('images compare', () => {
 });
 
 describe('corners detection', () => {
-  it('corners are correctly detected', async () => {
-    const imageA = await readImage(testImageA.image);
-    const imageB = await readImage(testImageB.image);
-    const cornersA = findSheetCorners(imageA);
-    const cornersB = findSheetCorners(imageB);
+  async function detectCornersAndTest(inputImage, validCorners, tolerance = 5 /* 5px */, drawOutput = false) {
+    const image = await readImage(inputImage);
+    const corners = findSheetCorners(image);
 
-    const cornerDistanceTolerance = 5; // 5px
-    cornersA.forEach((computedPoint, index) => {
-      const realCorner = testImageA.corners[index];
+    corners.forEach((computedPoint, index) => {
+      const realCorner = validCorners[index];
       const pointsDistance = Math.hypot(computedPoint.x - realCorner.x, computedPoint.y - realCorner.y);
-      expect(pointsDistance).toBeLessThan(cornerDistanceTolerance);
-    });
-    cornersB.forEach((computedPoint, index) => {
-      const realCorner = testImageB.corners[index];
-      const pointsDistance = Math.hypot(computedPoint.x - realCorner.x, computedPoint.y - realCorner.y);
-      expect(pointsDistance).toBeLessThan(cornerDistanceTolerance);
+      expect(pointsDistance).toBeLessThan(tolerance);
     });
 
-    expect.assertions(8); // 2 test images, 4 corners per image to verify, 1 assertion per corner
-
-    if (process.env.DRAW_OUTPUT) {
-      drawPoints(imageA, cornersA);
-      drawPoints(imageB, cornersB);
+    if (drawOutput) {
+      drawPoints(image, corners);
     }
+
+    image.delete();
+  }
+
+  it('corners are correctly detected', async () => {
+    const drawOutput = !!process.env.DRAW_OUTPUT;
+    await detectCornersAndTest(testImageA.image, testImageA.corners, 5, drawOutput);
+    await detectCornersAndTest(testImageB.image, testImageB.corners, 5, drawOutput);
+    expect.assertions(8); // 2 test images, 4 corners per image to check, 1 assertion per corner
   });
 });
 
@@ -144,26 +142,25 @@ describe('corners detection', () => {
 //       previous (saved) results with current ones, we have to write them
 //       first and re-read them to compare with the previous results.
 describe('remove sheet perspective', () => {
-  it('perspective is removed successfully', async () => {
-    const imageA = await readImage(testImageA.image);
-    const validSheetA = await readImage(testImageA.output);
-    const sheetA = removeSheetPerspective(imageA, testImageA.corners);
-    const tmpSheetAFilename = `test-output-${Date.now()}.jpeg`;
-    drawImage(sheetA, tmpSheetAFilename);
-    const readSheetA = await readImage(tmpSheetAFilename);
-    expect(areEquals(readSheetA, validSheetA)).toBe(true);
-
-    const imageB = await readImage(testImageB.image);
-    const validSheetB = await readImage(testImageB.output);
-    const sheetB = removeSheetPerspective(imageB, testImageB.corners);
-    const tmpSheetBFilename = `test-output-${Date.now()}.jpeg`;
-    drawImage(sheetB, tmpSheetBFilename);
-    const readSheetB = await readImage(tmpSheetBFilename);
-    expect(areEquals(readSheetB, validSheetB)).toBe(true);
-
-    if (!process.env.DRAW_OUTPUT) {
-      unlinkSync(tmpSheetAFilename);
-      unlinkSync(tmpSheetBFilename);
+  async function removePerspectiveAndTest(inputImage, corners, validResult, drawOutput = false) {
+    const image = await readImage(inputImage);
+    const expectedResult = await readImage(validResult);
+    const sheet = removeSheetPerspective(image, corners);
+    const tmpFilename = `test-output-${Date.now()}.jpeg`;
+    drawImage(sheet, tmpFilename);
+    const readSheet = await readImage(tmpFilename);
+    expect(areEquals(readSheet, expectedResult)).toBe(true);
+    if (!drawOutput) {
+      unlinkSync(tmpFilename);
     }
+    image.delete();
+    expectedResult.delete();
+    sheet.delete();
+  }
+
+  it('perspective is removed successfully', async () => {
+    const drawOutput = !!process.env.DRAW_OUTPUT;
+    await removePerspectiveAndTest(testImageA.image, testImageA.corners, testImageA.output, drawOutput);
+    await removePerspectiveAndTest(testImageB.image, testImageB.corners, testImageB.output, drawOutput);
   });
 });
