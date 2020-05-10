@@ -1,5 +1,5 @@
 import { Canvas, createCanvas, Image, loadImage, ImageData } from 'canvas';
-import { writeFileSync } from 'fs';
+import { writeFileSync, unlinkSync } from 'fs';
 import { findSheetCorners, removeSheetPerspective } from '.';
 
 async function readImage(path) {
@@ -140,23 +140,30 @@ describe('corners detection', () => {
   });
 });
 
-// TODO: Perspective tests are not working, probably because of a colorspace
-//       issue between resulting image and target image.
+// NOTE: When an image is saved, its properties change, so in order to compare
+//       previous (saved) results with current ones, we have to write them
+//       first and re-read them to compare with the previous results.
 describe('remove sheet perspective', () => {
   it('perspective is removed successfully', async () => {
     const imageA = await readImage(testImageA.image);
-    const imageB = await readImage(testImageB.image);
     const validSheetA = await readImage(testImageA.output);
-    const validSheetB = await readImage(testImageB.output);
     const sheetA = removeSheetPerspective(imageA, testImageA.corners);
+    const tmpSheetAFilename = `test-output-${Date.now()}.jpeg`;
+    drawImage(sheetA, tmpSheetAFilename);
+    const readSheetA = await readImage(tmpSheetAFilename);
+    expect(areEquals(readSheetA, validSheetA)).toBe(true);
+
+    const imageB = await readImage(testImageB.image);
+    const validSheetB = await readImage(testImageB.output);
     const sheetB = removeSheetPerspective(imageB, testImageB.corners);
+    const tmpSheetBFilename = `test-output-${Date.now()}.jpeg`;
+    drawImage(sheetB, tmpSheetBFilename);
+    const readSheetB = await readImage(tmpSheetBFilename);
+    expect(areEquals(readSheetB, validSheetB)).toBe(true);
 
-    expect(areEquals(sheetA, validSheetA)).toBe(true);
-    expect(areEquals(sheetB, validSheetB)).toBe(true);
-
-    if (process.env.DRAW_OUTPUT) {
-      drawImage(sheetA);
-      drawImage(sheetB);
+    if (!process.env.DRAW_OUTPUT) {
+      unlinkSync(tmpSheetAFilename);
+      unlinkSync(tmpSheetBFilename);
     }
   });
 });
