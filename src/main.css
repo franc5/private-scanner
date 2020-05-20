@@ -10,12 +10,14 @@ body {
   max-height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #FAFAFA;
+  justify-content: center;
+  background-color: #000;
 }
 
-#preview {
-  flex-grow: 1;
-  background-color: black;
+#canvas {
+  width: 100%;
+  display: none;
+  object-fit: cover;
 }
 
 #capture-btn {
