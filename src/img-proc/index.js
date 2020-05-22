@@ -85,15 +85,37 @@ function sortCorners(corners) {
   return sortedCorners;
 }
 
+/**
+ * After testing this function on a device with a high resolution camera, I realized that this
+ * function doesn't work well with large images (ie: 1152x2048 or higher).
+ * See message from 307852029b8e9caafadf523646e0c35b4c09a98c commit.
+ *
+ * Because of this, before starting the detection, the image is now scaled if its width is higher
+ * than 600px (an arbitrary value that works well). After the detection, the corners are shifted
+ * to revert the scaling effect. Doing this speeds up the detection without any negative effect.
+ */
 export function findSheetCorners(image, threshold = 200, ratio = 2) {
-  const edges = detectEdges(image, threshold, ratio);
+  let scale = 1;
+  const downsizedImage = image.clone();
+  if (downsizedImage.cols > 600) {
+    scale = 600 / downsizedImage.cols;
+    cv.resize(image, downsizedImage, new cv.Size(0, 0), scale, scale);
+  }
+  const edges = detectEdges(downsizedImage, threshold, ratio);
+  downsizedImage.delete();
   const largestContour = findLargestContour(edges);
   edges.delete();
   const smoothContour = approximateCurve(largestContour);
   largestContour.delete();
   const corners = getCurvePoints(smoothContour);
   smoothContour.delete();
-  const sortedCorners = sortCorners(corners);
+  let sortedCorners = sortCorners(corners);
+  if (scale !== 1) {
+    sortedCorners = sortedCorners.map(({x, y}) => ({
+      x: Math.round(x / scale),
+      y: Math.round(y / scale),
+    }));
+  }
 
   return sortedCorners;
 }
