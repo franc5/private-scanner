@@ -2,7 +2,7 @@
 
 This project aims to be a FLOSS scanner PWA with no tracking/malicious code
 
-## Prerequisites
+## Prerequisites
 
 - NodeJS
 - yarn or npm
@@ -12,7 +12,15 @@ This project aims to be a FLOSS scanner PWA with no tracking/malicious code
 
 ## Running tests
 
-To run unit tests, you can run `yarn test`
+To run unit tests, you can run `yarn test` (you can set the `DRAW_OUTPUT` environment variable to draw output images)
+
+## Running the app
+
+To run the app for development, you can run `yarn start`
+
+## Building the app
+
+To build the app, you can run `yarn build`
 
 ## License
 
