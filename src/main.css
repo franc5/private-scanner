@@ -20,17 +20,34 @@ body {
   object-fit: cover;
 }
 
-#capture-btn {
-	width: 56px;
-	height: 56px;
+.floating-button {
+  padding: 0;
+  width: 56px;
+  height: 56px;
   position: fixed;
-  left: 50%;
   bottom: 23px;
-  margin-left: -23px;
   color: #FFF;
   font-size: 30px;
   outline: none;
   border-radius: 50%;
   background-color: #999;
   opacity: .5;
+  text-align: center;
+}
+
+.floating-button.left {
+  left: 23px;
+}
+
+.floating-button.center {
+  left: 50%;
+  margin-left: -23px;
+}
+
+.floating-button.right {
+  right: 23px;
+}
+
+#back-btn, #download-btn {
+  display: none;
 }
