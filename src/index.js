@@ -12,6 +12,7 @@ const captureBtn = document.getElementById('capture-btn');
 const backBtn = document.getElementById('back-btn');
 const downloadBtn = document.getElementById('download-btn');
 const canvas = document.getElementById('canvas');
+const loading = document.getElementById('loading');
 
 const createImageFromBlob = blob => new Promise(resolve => {
   const image = new Image();
@@ -25,6 +26,8 @@ const createImageFromBlob = blob => new Promise(resolve => {
 
 captureBtn.addEventListener('click', async () => {
   try {
+    loading.style.display = 'initial';
+    captureBtn.style.display = 'none';
     preview.pause();
     const track = stream.getVideoTracks()[0];
     const picture = await (new ImageCapture(track)).takePhoto();
@@ -34,8 +37,8 @@ captureBtn.addEventListener('click', async () => {
     const corners = findSheetCorners(source);
     const sheet = removeSheetPerspective(source, corners);
     preview.style.display = 'none';
+    loading.style.display = 'none';
     canvas.style.display = 'initial';
-    captureBtn.style.display = 'none';
     backBtn.style.display = 'initial';
     downloadBtn.style.display = 'initial';
     cv.imshow(canvas, sheet);
