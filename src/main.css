@@ -53,6 +53,6 @@ footer .button:hover {
   line-height: 56px;
 }
 
-#canvas, #back-btn, #download-btn, #loading {
+#picture, #canvas, #back-btn, #download-btn, #loading {
   display: none;
 }

@@ -1,4 +1,5 @@
-import { findSheetCorners, removeSheetPerspective } from './img-proc';
+import { findSheetCorners } from './img-proc';
+import { loadBlobPhotoIntoTargetImg } from './utils';
 
 // TODO: Handle exceptions
 const cvReady = new Promise(resolve => {
@@ -9,53 +10,41 @@ const cvReady = new Promise(resolve => {
 let stream;
 const preview = document.getElementById('preview');
 const captureBtn = document.getElementById('capture-btn');
+captureBtn.addEventListener('click', showPictureAndCorners);
 const backBtn = document.getElementById('back-btn');
 const downloadBtn = document.getElementById('download-btn');
 const canvas = document.getElementById('canvas');
 const loading = document.getElementById('loading');
+const picture = document.getElementById('picture');
 
-const createImageFromBlob = blob => new Promise(resolve => {
-  const image = new Image();
-  const imageUrl = URL.createObjectURL(blob);
-  image.onload = () => {
-    URL.revokeObjectURL(imageUrl);
-    resolve(image);
-  };
-  image.src = imageUrl;
-});
-
-captureBtn.addEventListener('click', async () => {
+async function showPictureAndCorners() {
   try {
     loading.style.display = 'initial';
     captureBtn.style.display = 'none';
     preview.pause();
     const track = stream.getVideoTracks()[0];
-    const picture = await (new ImageCapture(track)).takePhoto();
-    const image = await createImageFromBlob(picture);
+    const photo = await (new ImageCapture(track)).takePhoto();
+    await loadBlobPhotoIntoTargetImg(picture, photo);
     await cvReady;
-    const source = cv.imread(image);
+    const source = cv.imread(picture);
     const corners = findSheetCorners(source);
-    const sheet = removeSheetPerspective(source, corners);
+    // TODO: Draw corners
+    picture.style.display = 'initial';
     preview.style.display = 'none';
     loading.style.display = 'none';
-    canvas.style.display = 'initial';
     backBtn.style.display = 'initial';
-    downloadBtn.style.display = 'initial';
-    cv.imshow(canvas, sheet);
     source.delete();
-    sheet.delete();
   } catch(error) {
     // TODO: Handle exceptions
     console.error(error);
   }
-});
+}
 
 backBtn.addEventListener('click', () => {
   preview.style.display = 'initial';
-  canvas.style.display = 'none';
+  picture.style.display = 'none';
   captureBtn.style.display = 'initial';
   backBtn.style.display = 'none';
-  downloadBtn.style.display = 'none';
   preview.play();
 });
 
