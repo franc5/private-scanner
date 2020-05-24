@@ -1,10 +1,11 @@
-export function loadBlobPhotoIntoTargetImg(target, blob) {
+export function createImageFromBlob(blob) {
   return new Promise(resolve => {
+    const image = new Image();
     const imageUrl = URL.createObjectURL(blob);
-    target.onload = () => {
+    image.onload = () => {
       URL.revokeObjectURL(imageUrl);
-      resolve();
+      resolve(image);
     };
-    target.src = imageUrl;
+    image.src = imageUrl;
   });
 }

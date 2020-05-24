@@ -1,5 +1,5 @@
 import { findSheetCorners } from './img-proc';
-import { loadBlobPhotoIntoTargetImg } from './utils';
+import { createImageFromBlob } from './utils';
 import { drawCorners, hideCanvas } from './canvas';
 
 // TODO: Handle exceptions
@@ -15,7 +15,7 @@ captureBtn.addEventListener('click', showPictureAndCorners);
 const backBtn = document.getElementById('back-btn');
 const downloadBtn = document.getElementById('download-btn');
 const loading = document.getElementById('loading');
-const picture = document.getElementById('picture');
+const picture = document.getElementById('picture-canvas');
 
 async function showPictureAndCorners() {
   try {
@@ -24,9 +24,10 @@ async function showPictureAndCorners() {
     preview.pause();
     const track = stream.getVideoTracks()[0];
     const photo = await (new ImageCapture(track)).takePhoto();
-    await loadBlobPhotoIntoTargetImg(picture, photo);
+    const image = await createImageFromBlob(photo);
     await cvReady;
-    const source = cv.imread(picture);
+    const source = cv.imread(image);
+    cv.imshow(picture, source);
     const corners = findSheetCorners(source);
     picture.style.display = 'initial';
     preview.style.display = 'none';
@@ -51,10 +52,9 @@ backBtn.addEventListener('click', () => {
 
 downloadBtn.addEventListener('click', () => {
   // TODO: Rethink this implementation
-  const canvas = document.getElementById('canvas');
   const downloadLink = document.createElement('a');
   downloadLink.download = `${Date.now()}.png`;
-  downloadLink.href = canvas.toDataURL();
+  downloadLink.href = picture.toDataURL();
   downloadLink.click();
 });
 

@@ -34,10 +34,9 @@ main > * {
   width: 100%;
 }
 
-#canvas {
+#picture-canvas, #corners-canvas {
   height: inherit;
   position: absolute;
-  z-index: 1;
 }
 
 footer .button {
@@ -59,6 +58,6 @@ footer .button:hover {
   line-height: 56px;
 }
 
-#picture, #canvas, #back-btn, #download-btn, #loading {
+#picture-canvas, #corners-canvas, #back-btn, #download-btn, #loading {
   display: none;
 }

@@ -1,4 +1,4 @@
-const canvas = document.getElementById('canvas');
+const canvas = document.getElementById('corners-canvas');
 const ctx = canvas.getContext('2d');
 canvas.addEventListener('touchstart', detectSelectedCorner);
 canvas.addEventListener('touchmove', moveSelectedCorner);
