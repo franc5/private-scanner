@@ -1,5 +1,6 @@
 import { findSheetCorners } from './img-proc';
 import { loadBlobPhotoIntoTargetImg } from './utils';
+import { drawCorners, hideCanvas } from './canvas';
 
 // TODO: Handle exceptions
 const cvReady = new Promise(resolve => {
@@ -13,7 +14,6 @@ const captureBtn = document.getElementById('capture-btn');
 captureBtn.addEventListener('click', showPictureAndCorners);
 const backBtn = document.getElementById('back-btn');
 const downloadBtn = document.getElementById('download-btn');
-const canvas = document.getElementById('canvas');
 const loading = document.getElementById('loading');
 const picture = document.getElementById('picture');
 
@@ -28,11 +28,11 @@ async function showPictureAndCorners() {
     await cvReady;
     const source = cv.imread(picture);
     const corners = findSheetCorners(source);
-    // TODO: Draw corners
     picture.style.display = 'initial';
     preview.style.display = 'none';
     loading.style.display = 'none';
     backBtn.style.display = 'initial';
+    drawCorners(corners, source.cols, source.rows);
     source.delete();
   } catch(error) {
     // TODO: Handle exceptions
@@ -41,6 +41,7 @@ async function showPictureAndCorners() {
 }
 
 backBtn.addEventListener('click', () => {
+  hideCanvas();
   preview.style.display = 'initial';
   picture.style.display = 'none';
   captureBtn.style.display = 'initial';
@@ -49,6 +50,8 @@ backBtn.addEventListener('click', () => {
 });
 
 downloadBtn.addEventListener('click', () => {
+  // TODO: Rethink this implementation
+  const canvas = document.getElementById('canvas');
   const downloadLink = document.createElement('a');
   downloadLink.download = `${Date.now()}.png`;
   downloadLink.href = canvas.toDataURL();

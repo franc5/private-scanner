@@ -34,6 +34,12 @@ main > * {
   width: 100%;
 }
 
+#canvas {
+  height: inherit;
+  position: absolute;
+  z-index: 1;
+}
+
 footer .button {
   width: 56px;
   height: 56px;
