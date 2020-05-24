@@ -1,6 +1,6 @@
-import { findSheetCorners } from './img-proc';
+import { findSheetCorners, removeSheetPerspective } from './img-proc';
 import { createImageFromBlob } from './utils';
-import { drawCorners, hideCanvas } from './canvas';
+import { drawCorners, getCorners, hideCanvas } from './canvas';
 
 // TODO: Handle exceptions
 const cvReady = new Promise(resolve => {
@@ -13,6 +13,8 @@ const preview = document.getElementById('preview');
 const captureBtn = document.getElementById('capture-btn');
 captureBtn.addEventListener('click', showPictureAndCorners);
 const backBtn = document.getElementById('back-btn');
+const nextBtn = document.getElementById('next-btn');
+nextBtn.addEventListener('click', applyPerspectiveTransformation);
 const downloadBtn = document.getElementById('download-btn');
 const loading = document.getElementById('loading');
 const picture = document.getElementById('picture-canvas');
@@ -32,6 +34,7 @@ async function showPictureAndCorners() {
     picture.style.display = 'initial';
     preview.style.display = 'none';
     loading.style.display = 'none';
+    nextBtn.style.display = 'initial';
     backBtn.style.display = 'initial';
     drawCorners(corners, source.cols, source.rows);
     source.delete();
@@ -47,8 +50,31 @@ backBtn.addEventListener('click', () => {
   picture.style.display = 'none';
   captureBtn.style.display = 'initial';
   backBtn.style.display = 'none';
+  downloadBtn.style.display = 'none';
+  nextBtn.style.display = 'none';
   preview.play();
 });
+
+function applyPerspectiveTransformation() {
+  try {
+    loading.style.display = 'initial';
+    nextBtn.style.display = 'none';
+    backBtn.style.display = 'none';
+    const corners = getCorners();
+    hideCanvas();
+    const source = cv.imread(picture);
+    const result = removeSheetPerspective(source, corners);
+    cv.imshow(picture, result);
+    loading.style.display = 'none';
+    backBtn.style.display = 'initial';
+    downloadBtn.style.display = 'initial';
+    source.delete();
+    result.delete();
+  } catch(error) {
+    // TODO: Handle exceptions
+    console.error(error);
+  }
+}
 
 downloadBtn.addEventListener('click', () => {
   // TODO: Rethink this implementation

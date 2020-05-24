@@ -104,6 +104,10 @@ export function drawCorners(detectedCorners, pictureWidth, pictureHeight) {
   drawCornersInCanvas();
 }
 
+export function getCorners() {
+  return corners;
+}
+
 export function hideCanvas() {
   canvas.style.display = 'none';
 }
