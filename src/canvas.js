@@ -67,17 +67,26 @@ function drawCornersInCanvas() {
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  corners.forEach(({ x: imageX, y: imageY }, index) => {
-    if (index == cornerBeingMoved) {
-      ctx.fillStyle = '#000';
-    } else {
-      ctx.fillStyle = '#1E88E5';
-    }
 
-    ctx.beginPath();
+  // Draw a transparent blue layer over the detected sheet
+  ctx.beginPath();
+  corners.forEach(({ x: imageX, y: imageY }) => {
     const { x: canvasX, y: canvasY } = normalizeToCanvas(imageX, imageY);
+    ctx.arc(canvasX, canvasY, 0, 0, 0);
+  });
+  ctx.fill();
+  ctx.closePath();
+
+  // Draw a circle centered in each corner (filled for the selected corner -if any-)
+  corners.forEach(({ x: imageX, y: imageY }, index) => {
+    const { x: canvasX, y: canvasY } = normalizeToCanvas(imageX, imageY);
+    ctx.beginPath();
     ctx.arc(canvasX, canvasY, cornerIndicatorRadius, 0, 2 * Math.PI);
-    ctx.fill();
+    if (index == cornerBeingMoved) {
+      ctx.fill();
+    } else {
+      ctx.stroke();
+    }
     ctx.closePath();
   });
 }
@@ -89,6 +98,8 @@ export function drawCorners(detectedCorners, pictureWidth, pictureHeight) {
   canvas.height = canvas.scrollHeight;
   normalizeToCanvas = getToCanvasNormalizer(pictureWidth, pictureHeight, canvas.width, canvas.height);
   normalizeCanvasTouchToImage = getToImageNormalizer(pictureWidth, pictureHeight, canvas.width, canvas.height, canvas.offsetLeft, canvas.offsetTop);
+  ctx.fillStyle = '#1E88E588';
+  ctx.strokeStyle = '#1E88E5';
 
   drawCornersInCanvas();
 }
