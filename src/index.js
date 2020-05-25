@@ -1,5 +1,5 @@
 import { findSheetCorners, removeSheetPerspective } from './img-proc';
-import { drawCorners, getCorners, hideCanvas } from './canvas';
+import { drawCorners, getCorners, hideCanvas } from './corners-canvas';
 
 // TODO: Handle exceptions
 const cvReady = new Promise(resolve => {
