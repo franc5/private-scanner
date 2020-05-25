@@ -1,5 +1,4 @@
 import { findSheetCorners, removeSheetPerspective } from './img-proc';
-import { createImageFromBlob } from './utils';
 import { drawCorners, getCorners, hideCanvas } from './canvas';
 
 // TODO: Handle exceptions
@@ -8,7 +7,6 @@ const cvReady = new Promise(resolve => {
   window.cv = require('./img-proc/opencv');
 });
 
-let stream;
 const preview = document.getElementById('preview');
 const captureBtn = document.getElementById('capture-btn');
 captureBtn.addEventListener('click', showPictureAndCorners);
@@ -24,19 +22,19 @@ async function showPictureAndCorners() {
     loading.style.display = 'initial';
     captureBtn.style.display = 'none';
     preview.pause();
-    const track = stream.getVideoTracks()[0];
-    const photo = await (new ImageCapture(track)).takePhoto();
-    const image = await createImageFromBlob(photo);
-    await cvReady;
-    const source = cv.imread(image);
-    cv.imshow(picture, source);
-    const corners = findSheetCorners(source);
     picture.style.display = 'initial';
+    picture.width = picture.scrollWidth;
+    picture.height = picture.scrollHeight;
+    const ctx = picture.getContext('2d');
+    ctx.drawImage(preview, 0, 0, picture.width, picture.height);
     preview.style.display = 'none';
+    await cvReady;
+    const source = cv.imread(picture);
+    const corners = findSheetCorners(source);
+    drawCorners(corners, source.cols, source.rows);
     loading.style.display = 'none';
     nextBtn.style.display = 'initial';
     backBtn.style.display = 'initial';
-    drawCorners(corners, source.cols, source.rows);
     source.delete();
   } catch(error) {
     // TODO: Handle exceptions
@@ -86,7 +84,7 @@ downloadBtn.addEventListener('click', () => {
 
 async function initCameraPreview() {
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: {
       facingMode: { exact: 'environment' },
     }});
     preview.srcObject = stream;
