@@ -3,8 +3,9 @@ import { drawCorners, getCorners, hideCanvas } from './corners-canvas';
 
 // TODO: Handle exceptions
 const cvReady = new Promise(resolve => {
+  // The OpenCV module is requested once the app is
+  // fully loaded and the camera preview is ready.
   window.Module = { onRuntimeInitialized: resolve };
-  window.cv = require('./img-proc/opencv');
 });
 
 const preview = document.getElementById('preview');
@@ -95,4 +96,6 @@ async function initCameraPreview() {
   }
 }
 
-initCameraPreview();
+// TODO: Handle exceptions
+initCameraPreview()
+  .then(() => import('./load-opencv'));
