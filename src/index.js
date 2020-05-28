@@ -1,5 +1,6 @@
 import { findSheetCorners, removeSheetPerspective } from './img-proc';
 import { drawCorners, getCorners, hideCanvas } from './corners-canvas';
+import jsPDF from 'jspdf';
 
 // TODO: Handle exceptions
 const cvReady = new Promise(resolve => {
@@ -15,6 +16,8 @@ const backBtn = document.getElementById('back-btn');
 const nextBtn = document.getElementById('next-btn');
 nextBtn.addEventListener('click', applyPerspectiveTransformation);
 const downloadBtn = document.getElementById('download-btn');
+downloadBtn.addEventListener('click', createAndDownloadPdf);
+
 const loading = document.getElementById('loading');
 const picture = document.getElementById('picture-canvas');
 
@@ -75,13 +78,20 @@ function applyPerspectiveTransformation() {
   }
 }
 
-downloadBtn.addEventListener('click', () => {
+function createAndDownloadImage() {
   // TODO: Rethink this implementation
   const downloadLink = document.createElement('a');
   downloadLink.download = `${Date.now()}.png`;
   downloadLink.href = picture.toDataURL();
   downloadLink.click();
-});
+}
+
+const A4mm = { width: 210, height: 297 };
+function createAndDownloadPdf() {
+  const pdf = new jsPDF();
+  pdf.addImage(picture, 'JPEG', 0, 0, A4mm.width, A4mm.height, '', 'NONE');
+  pdf.save(`${Date.now()}.pdf`);
+}
 
 async function initCameraPreview() {
   try {
