@@ -1,0 +1,45 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Checkout private-scanner repo
+      uses: actions/checkout@v2
+      with:
+        path: private-scanner
+
+    - name: Checkout opencv repo
+      uses: actions/checkout@v2
+      with:
+        repository: opencv/opencv
+        ref: 4.3.0
+        token: ${{ secrets.PAT }}
+        path: opencv
+
+    - name: Build OpenCV.js
+      run: |
+        cd opencv
+        docker run --rm --workdir /code -v "$PWD":/code "trzeci/emscripten:sdk-tag-1.38.32-64bit" python ./platforms/js/build_js.py build --build_wasm
+        cd ${GITHUB_WORKSPACE}
+
+    - name: Move OpenCV.js into private-scanner project
+      run: mv opencv/build/opencv.js private-scanner/src/img-proc/.
+
+    - name: Install dependencies, run tests and build
+      uses: actions/setup-node@v1
+      run: |
+        cd private-scanner
+        yarn
+        # yarn test # It seems that it is not possible to run test which save files on disk (see "remove sheet perspective")
+        yarn build
+
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        publish_dir: ./dist
