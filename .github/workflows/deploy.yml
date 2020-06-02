@@ -24,12 +24,13 @@ jobs:
 
     - name: Build OpenCV.js
       run: |
+        mv ${GITHUB_WORKSPACE}/private-scanner/opencv_js.config.py ${GITHUB_WORKSPACE}/private-scanner/platforms/js/.
         cd opencv
         docker run --rm --workdir /code -v "$PWD":/code "trzeci/emscripten:sdk-tag-1.38.32-64bit" python ./platforms/js/build_js.py build --build_wasm
         cd ${GITHUB_WORKSPACE}
 
     - name: Move OpenCV.js into private-scanner project
-      run: mv opencv/build/opencv.js private-scanner/src/img-proc/.
+      run: mv opencv/build/bin/opencv.js private-scanner/src/img-proc/.
 
     - name: Install dependencies, run tests and build
       uses: actions/setup-node@v1
