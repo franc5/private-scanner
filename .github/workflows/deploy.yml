@@ -24,18 +24,20 @@ jobs:
 
     - name: Build OpenCV.js
       run: |
-        mv ${GITHUB_WORKSPACE}/private-scanner/opencv_js.config.py ${GITHUB_WORKSPACE}/private-scanner/platforms/js/.
+        mv ${GITHUB_WORKSPACE}/private-scanner/opencv_js.config.py ${GITHUB_WORKSPACE}/opencv/platforms/js/opencv_js.config.py
         cd opencv
         docker run --rm --workdir /code -v "$PWD":/code "trzeci/emscripten:sdk-tag-1.38.32-64bit" python ./platforms/js/build_js.py build --build_wasm
         cd ${GITHUB_WORKSPACE}
 
-    - name: Move OpenCV.js into private-scanner project
-      run: mv opencv/build/bin/opencv.js private-scanner/src/img-proc/.
+    - name: Copy OpenCV.js into private-scanner project
+      run: cp ${GITHUB_WORKSPACE}/opencv/build/bin/opencv.js ${GITHUB_WORKSPACE}/private-scanner/src/img-proc/opencv.js
+
+    - name: Setup Node
+      uses: actions/setup-node@v1
 
     - name: Install dependencies, run tests and build
-      uses: actions/setup-node@v1
       run: |
-        cd private-scanner
+        cd ${GITHUB_WORKSPACE}/private-scanner
         yarn
         # yarn test # It seems that it is not possible to run test which save files on disk (see "remove sheet perspective")
         yarn build
@@ -43,4 +45,5 @@ jobs:
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
-        publish_dir: ./dist
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./private-scanner/dist
