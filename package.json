@@ -5,7 +5,7 @@
   "scripts": {
     "test": "jest",
     "start": "parcel src/index.html",
-    "build": "parcel build src/index.html --no-source-maps --no-cache"
+    "build": "parcel build src/index.html --no-source-maps --no-cache --public-url ./"
   },
   "dependencies": {
     "jspdf": "^1.5.3"
