@@ -93,19 +93,16 @@ function createAndDownloadPdf() {
   pdf.save(`${Date.now()}.pdf`);
 }
 
-async function initCameraPreview() {
+(async function initApp() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: {
       facingMode: { exact: 'environment' },
     }});
     preview.srcObject = stream;
     preview.play();
+    await import('./load-opencv');
   } catch(error) {
     // TODO: Handle exceptions (NotAllowedError | NotFoundError)
     console.error(error);
   }
-}
-
-// TODO: Handle exceptions
-initCameraPreview()
-  .then(() => import('./load-opencv'));
+})();
