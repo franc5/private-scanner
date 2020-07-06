@@ -7,34 +7,20 @@ canvas.addEventListener('touchend', deselectCorner);
 const cornerIndicatorRadius = 15;
 const cornerTouchableRadius = 56;
 
-let corners, cornerBeingMoved, normalizeToCanvas, normalizeCanvasTouchToImage;
+let corners, cornerBeingMoved;
 
-/**
- * Returns a function which takes a point (coordinates `x` and `y`) from the original image and returns
- * the corresponding point in the canvas (by normalizing the size difference between the image and the canvas)
- */
-const getToCanvasNormalizer = (pictureWidth, pictureHeight, canvasWidth, canvasHeight) => (x, y) => ({
-  x: Math.round(x * canvasWidth / pictureWidth),
-  y: Math.round(y * canvasHeight / pictureHeight),
-});
-
-/**
- * Returns a function which takes a point (coordinates `x` and `y`) from the canvas and returns
- * the corresponding point in the image (by normalizing the size difference between the canvas and the image)
- * This function accepts two optionals parameters, `canvasOffsetX` and `canvasOffsetY`, to compensate the x-offset
- * and/or the y-offset of the canvas if needed
- */
-const getToImageNormalizer = (pictureWidth, pictureHeight, canvasWidth, canvasHeight, canvasOffsetX = 0, canvasOffsetY = 0) => (x, y) => ({
-  x: Math.round((x - canvasOffsetX) * pictureWidth / canvasWidth),
-  y: Math.round((y - canvasOffsetY) * pictureHeight / canvasHeight),
-});
+function normalizeCanvasTouchToImage({ clientX, clientY }) {
+  return {
+    x: Math.round((clientX - canvas.offsetLeft) * canvas.width / canvas.scrollWidth),
+    y: Math.round((clientY - canvas.offsetTop) * canvas.height / canvas.scrollHeight),
+  };
+}
 
 function detectSelectedCorner(event) {
   cornerBeingMoved = null;
-  const { clientX, clientY } = event.targetTouches[0];
-  const { x: imageX, y: imageY } = normalizeCanvasTouchToImage(clientX, clientY);
+  const { x: imageX, y: imageY } = normalizeCanvasTouchToImage(event.targetTouches[0]);
 
-  corners.some(({x, y}, cornerIndex) => {
+  corners.some(({ x, y }, cornerIndex) => {
     const distanceToCorner = Math.hypot(x - imageX, y - imageY);
     if (distanceToCorner < cornerTouchableRadius) {
       cornerBeingMoved = cornerIndex;
@@ -47,12 +33,7 @@ function detectSelectedCorner(event) {
 function moveSelectedCorner(event) {
   if (cornerBeingMoved === null) return;
 
-  const { clientX, clientY } = event.targetTouches[0];
-  const { x: imageX, y: imageY } = normalizeCanvasTouchToImage(clientX, clientY);
-  corners[cornerBeingMoved] = {
-    x: imageX,
-    y: imageY,
-  };
+  corners[cornerBeingMoved] = normalizeCanvasTouchToImage(event.targetTouches[0]);
   drawCornersInCanvas();
 }
 
@@ -70,18 +51,14 @@ function drawCornersInCanvas() {
 
   // Draw a transparent blue layer over the detected sheet
   ctx.beginPath();
-  corners.forEach(({ x: imageX, y: imageY }) => {
-    const { x: canvasX, y: canvasY } = normalizeToCanvas(imageX, imageY);
-    ctx.arc(canvasX, canvasY, 0, 0, 0);
-  });
+  corners.forEach(({ x, y }) => ctx.arc(x, y, 0, 0, 0));
   ctx.fill();
   ctx.closePath();
 
   // Draw a circle centered in each corner (filled for the selected corner -if any-)
   corners.forEach(({ x: imageX, y: imageY }, index) => {
-    const { x: canvasX, y: canvasY } = normalizeToCanvas(imageX, imageY);
     ctx.beginPath();
-    ctx.arc(canvasX, canvasY, cornerIndicatorRadius, 0, 2 * Math.PI);
+    ctx.arc(imageX, imageY, cornerIndicatorRadius, 0, 2 * Math.PI);
     if (index == cornerBeingMoved) {
       ctx.fill();
     } else {
@@ -96,8 +73,6 @@ export function drawCorners(detectedCorners, pictureWidth, pictureHeight) {
   canvas.style.display = 'initial';
   canvas.width = pictureWidth;
   canvas.height = pictureHeight;
-  normalizeToCanvas = getToCanvasNormalizer(pictureWidth, pictureHeight, canvas.width, canvas.height);
-  normalizeCanvasTouchToImage = getToImageNormalizer(pictureWidth, pictureHeight, canvas.width, canvas.height, canvas.offsetLeft, canvas.offsetTop);
   ctx.fillStyle = '#1E88E588';
   ctx.strokeStyle = '#1E88E5';
 
