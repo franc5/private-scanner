@@ -26,6 +26,7 @@ footer {
 
 main {
   display: flex;
+  align-items: center;
   height: calc(100% - 2 * 56px);
   background-color: #000;
 }
@@ -35,7 +36,6 @@ main > * {
 }
 
 #picture-canvas, #corners-canvas {
-  height: inherit;
   position: absolute;
 }
 

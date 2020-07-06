@@ -94,8 +94,8 @@ function drawCornersInCanvas() {
 export function drawCorners(detectedCorners, pictureWidth, pictureHeight) {
   corners = [...detectedCorners];
   canvas.style.display = 'initial';
-  canvas.width = canvas.scrollWidth;
-  canvas.height = canvas.scrollHeight;
+  canvas.width = pictureWidth;
+  canvas.height = pictureHeight;
   normalizeToCanvas = getToCanvasNormalizer(pictureWidth, pictureHeight, canvas.width, canvas.height);
   normalizeCanvasTouchToImage = getToImageNormalizer(pictureWidth, pictureHeight, canvas.width, canvas.height, canvas.offsetLeft, canvas.offsetTop);
   ctx.fillStyle = '#1E88E588';

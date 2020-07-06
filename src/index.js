@@ -27,8 +27,8 @@ async function showPictureAndCorners() {
     captureBtn.style.display = 'none';
     preview.pause();
     picture.style.display = 'initial';
-    picture.width = picture.scrollWidth;
-    picture.height = picture.scrollHeight;
+    picture.width = preview.videoWidth;
+    picture.height = preview.videoHeight;
     const ctx = picture.getContext('2d');
     ctx.drawImage(preview, 0, 0, picture.width, picture.height);
     preview.style.display = 'none';
