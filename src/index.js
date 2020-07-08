@@ -1,4 +1,5 @@
 import { computeAndDrawCorners, removePerspective, getCanvas, hideCanvas } from './canvas';
+import { showLoadingSpinner, hideLoadingSpinner } from './loading-spinner';
 import jsPDF from 'jspdf';
 
 // TODO: Handle exceptions
@@ -17,21 +18,20 @@ nextBtn.addEventListener('click', applyPerspectiveTransformation);
 const downloadBtn = document.getElementById('download-btn');
 downloadBtn.addEventListener('click', createAndDownloadPdf);
 
-const loading = document.getElementById('loading');
-
 async function showPictureAndCorners() {
   try {
-    loading.style.display = 'initial';
+    showLoadingSpinner();
     captureBtn.style.display = 'none';
     preview.pause();
     await cvReady;
     computeAndDrawCorners();
-    loading.style.display = 'none';
+    hideLoadingSpinner();
     nextBtn.style.display = 'initial';
     backBtn.style.display = 'initial';
   } catch(error) {
     // TODO: Handle exceptions
     console.error(error);
+    hideLoadingSpinner();
   }
 }
 
@@ -47,17 +47,18 @@ backBtn.addEventListener('click', () => {
 
 function applyPerspectiveTransformation() {
   try {
-    loading.style.display = 'initial';
+    showLoadingSpinner();
     nextBtn.style.display = 'none';
     backBtn.style.display = 'none';
     removePerspective();
+    hideLoadingSpinner();
     preview.style.display = 'none';
-    loading.style.display = 'none';
     backBtn.style.display = 'initial';
     downloadBtn.style.display = 'initial';
   } catch(error) {
     // TODO: Handle exceptions
     console.error(error);
+    hideLoadingSpinner();
   }
 }
 
@@ -85,10 +86,11 @@ function createAndDownloadPdf() {
     }});
     preview.srcObject = stream;
     preview.play();
-    loading.style.display = 'none';
+    hideLoadingSpinner();
     await import('./load-opencv');
   } catch(error) {
     // TODO: Handle exceptions (NotAllowedError | NotFoundError)
     console.error(error);
+    hideLoadingSpinner();
   }
 })();
