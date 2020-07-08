@@ -35,7 +35,8 @@ main > * {
   width: 100%;
 }
 
-#picture-canvas, #corners-canvas {
+#corners-canvas {
+  z-index: 1;
   position: absolute;
 }
 
@@ -58,6 +59,6 @@ footer .button:hover {
   line-height: 56px;
 }
 
-#picture-canvas, #corners-canvas, #back-btn, #next-btn, #download-btn, #loading {
+#back-btn, #next-btn, #download-btn, #loading {
   display: none;
 }

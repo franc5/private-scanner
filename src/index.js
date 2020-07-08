@@ -1,5 +1,4 @@
-import { findSheetCorners, removeSheetPerspective } from './img-proc';
-import { drawCorners, getCorners, hideCanvas } from './corners-canvas';
+import { computeAndDrawCorners, removePerspective, getCanvas, hideCanvas } from './corners-canvas';
 import jsPDF from 'jspdf';
 
 // TODO: Handle exceptions
@@ -19,27 +18,17 @@ const downloadBtn = document.getElementById('download-btn');
 downloadBtn.addEventListener('click', createAndDownloadPdf);
 
 const loading = document.getElementById('loading');
-const picture = document.getElementById('picture-canvas');
 
 async function showPictureAndCorners() {
   try {
     loading.style.display = 'initial';
     captureBtn.style.display = 'none';
     preview.pause();
-    picture.style.display = 'initial';
-    picture.width = preview.videoWidth;
-    picture.height = preview.videoHeight;
-    const ctx = picture.getContext('2d');
-    ctx.drawImage(preview, 0, 0, picture.width, picture.height);
-    preview.style.display = 'none';
     await cvReady;
-    const source = cv.imread(picture);
-    const corners = findSheetCorners(source);
-    drawCorners(corners, source.cols, source.rows);
+    computeAndDrawCorners();
     loading.style.display = 'none';
     nextBtn.style.display = 'initial';
     backBtn.style.display = 'initial';
-    source.delete();
   } catch(error) {
     // TODO: Handle exceptions
     console.error(error);
@@ -49,7 +38,6 @@ async function showPictureAndCorners() {
 backBtn.addEventListener('click', () => {
   hideCanvas();
   preview.style.display = 'initial';
-  picture.style.display = 'none';
   captureBtn.style.display = 'initial';
   backBtn.style.display = 'none';
   downloadBtn.style.display = 'none';
@@ -62,16 +50,11 @@ function applyPerspectiveTransformation() {
     loading.style.display = 'initial';
     nextBtn.style.display = 'none';
     backBtn.style.display = 'none';
-    const corners = getCorners();
-    hideCanvas();
-    const source = cv.imread(picture);
-    const result = removeSheetPerspective(source, corners);
-    cv.imshow(picture, result);
+    removePerspective();
+    preview.style.display = 'none';
     loading.style.display = 'none';
     backBtn.style.display = 'initial';
     downloadBtn.style.display = 'initial';
-    source.delete();
-    result.delete();
   } catch(error) {
     // TODO: Handle exceptions
     console.error(error);
@@ -80,6 +63,7 @@ function applyPerspectiveTransformation() {
 
 function createAndDownloadImage() {
   // TODO: Rethink this implementation
+  const picture = getCanvas();
   const downloadLink = document.createElement('a');
   downloadLink.download = `${Date.now()}.png`;
   downloadLink.href = picture.toDataURL();
@@ -88,6 +72,7 @@ function createAndDownloadImage() {
 
 const A4mm = { width: 210, height: 297 };
 function createAndDownloadPdf() {
+  const picture = getCanvas();
   const pdf = new jsPDF();
   pdf.addImage(picture, 'JPEG', 0, 0, A4mm.width, A4mm.height, '', 'NONE');
   pdf.save(`${Date.now()}.pdf`);
