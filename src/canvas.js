@@ -1,7 +1,7 @@
 import { findSheetCorners, removeSheetPerspective } from './img-proc';
 
 const preview = document.getElementById('preview');
-const canvas = document.getElementById('corners-canvas');
+const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 canvas.addEventListener('touchstart', detectSelectedCorner);
 canvas.addEventListener('touchmove', moveSelectedCorner);

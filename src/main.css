@@ -35,7 +35,7 @@ main > * {
   width: 100%;
 }
 
-#corners-canvas {
+#canvas {
   z-index: 1;
   position: absolute;
 }

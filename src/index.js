@@ -1,4 +1,4 @@
-import { computeAndDrawCorners, removePerspective, getCanvas, hideCanvas } from './corners-canvas';
+import { computeAndDrawCorners, removePerspective, getCanvas, hideCanvas } from './canvas';
 import jsPDF from 'jspdf';
 
 // TODO: Handle exceptions
