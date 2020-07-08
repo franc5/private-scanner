@@ -85,6 +85,7 @@ function createAndDownloadPdf() {
     }});
     preview.srcObject = stream;
     preview.play();
+    loading.style.display = 'none';
     await import('./load-opencv');
   } catch(error) {
     // TODO: Handle exceptions (NotAllowedError | NotFoundError)
