@@ -22,6 +22,7 @@
   "browserslist": [
     "defaults",
     "not IE 11",
-    "not IE_Mob 11"
+    "not IE_Mob 11",
+    "not op_mob > 1"
   ]
 }
