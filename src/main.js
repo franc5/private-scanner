@@ -2,6 +2,10 @@ import { computeAndDrawCorners, removePerspective, getCanvas, hideCanvas } from 
 import { showLoadingSpinner, hideLoadingSpinner } from './loading-spinner';
 import jsPDF from 'jspdf';
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+}
+
 // TODO: Handle exceptions
 const cvReady = new Promise(resolve => {
   // The OpenCV module is requested once the app is
