@@ -1,0 +1,18 @@
+{
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "./assets/ico192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/ico512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "name": "PrivateScanner",
+  "short_name": "PS",
+  "start_url": "/"
+}
