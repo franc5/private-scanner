@@ -1,9 +1,12 @@
+// Temporary workaround to allow caching using GitHub Pages subdomain
+const ORIGIN = '/private-scanner/';
+
 const CACHE_NAME = 'private-scanner-v1';
 const URLS_TO_CACHE = [
-  '/',
-  '/main.css',
-  '/main.js',
-  '/load-opencv.js',
+  `${ORIGIN}`,
+  `${ORIGIN}main.css`,
+  `${ORIGIN}main.js`,
+  `${ORIGIN}load-opencv.js`,
 ];
 
 self.addEventListener('install', event => {
