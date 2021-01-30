@@ -11,10 +11,16 @@ jobs:
     steps:
     - name: Checkout private-scanner repo
       uses: actions/checkout@v2
+
+    - name: Cache opencv.js
+      id: cache-opencvjs
+      uses: actions/cache@v2
       with:
-        path: private-scanner
+        path: src/img-proc/opencv.js
+        key: opencvjs
 
     - name: Checkout opencv repo
+      if: steps.cache-opencvjs.outputs.cache-hit != 'true'
       uses: actions/checkout@v2
       with:
         repository: opencv/opencv
@@ -23,22 +29,34 @@ jobs:
         path: opencv
 
     - name: Build OpenCV.js
+      if: steps.cache-opencvjs.outputs.cache-hit != 'true'
       run: |
-        mv ${GITHUB_WORKSPACE}/private-scanner/opencv_js.config.py ${GITHUB_WORKSPACE}/opencv/platforms/js/opencv_js.config.py
+        mv opencv_js.config.py opencv/platforms/js/opencv_js.config.py
         cd opencv
         docker run --rm --workdir /code -v "$PWD":/code "trzeci/emscripten:sdk-tag-1.38.32-64bit" python ./platforms/js/build_js.py build --build_wasm
         cd ${GITHUB_WORKSPACE}
 
     - name: Copy OpenCV.js into private-scanner project
-      run: cp ${GITHUB_WORKSPACE}/opencv/build/bin/opencv.js ${GITHUB_WORKSPACE}/private-scanner/src/img-proc/opencv.js
+      if: steps.cache-opencvjs.outputs.cache-hit != 'true'
+      run: cp opencv/build/bin/opencv.js src/img-proc/opencv.js
 
     - name: Setup Node
       uses: actions/setup-node@v1
 
-    - name: Install dependencies, run tests and build
+    - name: Cache dependencies
+      id: cache-dependencies
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: node_modules
+
+    - name: Install dependencies
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
-        cd ${GITHUB_WORKSPACE}/private-scanner
         yarn
+
+    - name: Run tests and build
+      run: |
         # yarn test # It seems that it is not possible to run test which save files on disk (see "remove sheet perspective")
         yarn build
 
@@ -46,4 +64,4 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./private-scanner/dist
+        publish_dir: dist
